@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store Inventory - Retail Chain Inventory Tracker</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-brand">
+        <h1>Retail Chain Inventory Tracker</h1>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li>
+          <a href="store_inventory.html" class="active">Store Inventory</a>
+        </li>
+        <li><a href="product_management.html">Product Management</a></li>
+        <li><a href="reports.html">Reports</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+      <div class="user-info">
+        <span id="currentUser">Loading...</span>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h2>Store Inventory Management</h2>
+        <p>Manage inventory levels across all store locations</p>
+      </div>
+
+      <!-- Store Selection -->
+      <div class="controls-section">
+        <div class="form-group">
+          <label for="storeSelect">Select Store:</label>
+          <select id="storeSelect" class="form-control">
+            <option value="">Loading stores...</option>
+          </select>
+        </div>
+        <div class="connection-status">
+          <span id="connectionStatus" class="status-disconnected"
+            >🔴 Disconnected</span
+          >
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="inventory-section">
+        <div class="section-header">
+          <h3 id="inventoryTitle">Select a store to view inventory</h3>
+          <button
+            class="btn btn-secondary"
+            onclick="refreshInventory()"
+            id="refreshBtn"
+            disabled
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div class="inventory-container">
+          <table class="data-table" id="inventoryTable">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Current Stock</th>
+                <th>Reorder Level</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody">
+              <tr>
+                <td colspan="6" class="no-data">
+                  Please select a store to view inventory
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Stock Update Modal -->
+    <div id="updateStockModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Update Stock</h3>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="updateStockForm">
+            <input type="hidden" id="updateProductId" />
+            <input type="hidden" id="updateStoreId" />
+
+            <div class="form-group">
+              <label>Product:</label>
+              <p id="updateProductName" class="form-text"></p>
+            </div>
+
+            <div class="form-group">
+              <label>Current Stock:</label>
+              <p id="updateCurrentStock" class="form-text"></p>
+            </div>
+
+            <div class="form-group">
+              <label for="stockChange">Stock Change:</label>
+              <input
+                type="number"
+                id="stockChange"
+                class="form-control"
+                placeholder="Enter positive to add, negative to remove"
+                required
+              />
+              <small class="form-help"
+                >Enter positive numbers to increase stock, negative to
+                decrease</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="updateReason">Reason:</label>
+              <input
+                type="text"
+                id="updateReason"
+                class="form-control"
+                placeholder="Reason for stock change"
+                required
+              />
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeUpdateModal()"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Update Stock
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer Stock Modal -->
+    <div id="transferStockModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Transfer Stock</h3>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="transferStockForm">
+            <input type="hidden" id="transferProductId" />
+            <input type="hidden" id="transferFromStore" />
+
+            <div class="form-group">
+              <label>Product:</label>
+              <p id="transferProductName" class="form-text"></p>
+            </div>
+
+            <div class="form-group">
+              <label>From Store:</label>
+              <p id="transferFromStoreName" class="form-text"></p>
+            </div>
+
+            <div class="form-group">
+              <label>Available Stock:</label>
+              <p id="transferAvailableStock" class="form-text"></p>
+            </div>
+
+            <div class="form-group">
+              <label for="transferToStore">To Store:</label>
+              <select id="transferToStore" class="form-control" required>
+                <option value="">Select destination store</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="transferQuantity">Quantity to Transfer:</label>
+              <input
+                type="number"
+                id="transferQuantity"
+                class="form-control"
+                min="1"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="transferReason">Reason:</label>
+              <input
+                type="text"
+                id="transferReason"
+                class="form-control"
+                placeholder="Reason for transfer"
+                required
+              />
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeTransferModal()"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Transfer Stock
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/store_inventory.js"></script>
+  </body>
+</html>
