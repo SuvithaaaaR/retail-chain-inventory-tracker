@@ -41,7 +41,7 @@ def seed_users():
     default_permissions = {
         'admin': ['products', 'inventory', 'reports', 'transactions', 'manage_users'],
         'manager': ['products', 'inventory', 'reports', 'transactions'],
-        'staff': ['inventory_view']
+        'staff': ['inventory_view', 'reports', 'transactions']
     }
 
     for user_data in users_data:

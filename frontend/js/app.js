@@ -140,6 +140,10 @@ class Utils {
  * Authentication Management
  */
 class Auth {
+  static get currentUser() {
+    return currentUser;
+  }
+
   static async checkAuthStatus() {
     try {
       const data = await Utils.apiCall("/auth/status");
