@@ -188,6 +188,28 @@ class StoreInventory {
     const status = this.getStockStatus(item.quantity, item.reorder_level);
     const statusClass = status.toLowerCase().replace(" ", "-");
 
+    // Check permissions - only show action buttons if user has 'inventory' permission
+    const currentUser = Auth.currentUser;
+    const hasInventoryPermission = currentUser && (
+      currentUser.role === 'admin' || 
+      (currentUser.permissions && currentUser.permissions.includes('inventory'))
+    );
+
+    // Build actions HTML based on permissions
+    let actionsHTML = '';
+    if (hasInventoryPermission) {
+      actionsHTML = `
+        <button class="action-btn action-btn-update" onclick="showUpdateStockModal(${item.product_id}, ${item.store_id})">
+          Update
+        </button>
+        <button class="action-btn action-btn-transfer" onclick="showTransferStockModal(${item.product_id}, ${item.store_id})">
+          Transfer
+        </button>
+      `;
+    } else {
+      actionsHTML = '<span class="text-muted">View Only</span>';
+    }
+
     row.innerHTML = `
             <td>${item.product_sku || "N/A"}</td>
             <td>
@@ -197,16 +219,7 @@ class StoreInventory {
             <td>${item.reorder_level}</td>
             <td class="status-${statusClass}">${status}</td>
             <td class="actions-cell">
-                <button class="action-btn action-btn-update" onclick="showUpdateStockModal(${
-                  item.product_id
-                }, ${item.store_id})">
-                    Update
-                </button>
-                <button class="action-btn action-btn-transfer" onclick="showTransferStockModal(${
-                  item.product_id
-                }, ${item.store_id})">
-                    Transfer
-                </button>
+                ${actionsHTML}
             </td>
         `;
 

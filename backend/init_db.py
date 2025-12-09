@@ -28,21 +28,20 @@ def create_database():
 
 
 def seed_users():
-    """Create sample users"""
-    print("Creating sample users...")
+    """Create sample users - 3 roles only"""
+    print("Creating sample users (3-role system)...")
     
     users_data = [
         {'username': 'admin', 'password': 'admin123', 'role': 'admin'},
         {'username': 'manager', 'password': 'manager123', 'role': 'manager'},
-        {'username': 'user1', 'password': 'user123', 'role': 'user'},
-        {'username': 'user2', 'password': 'user123', 'role': 'user'},
+        {'username': 'staff', 'password': 'staff123', 'role': 'staff'},
     ]
     
     # Define default permission sets per role
     default_permissions = {
         'admin': ['products', 'inventory', 'reports', 'transactions', 'manage_users'],
         'manager': ['products', 'inventory', 'reports', 'transactions'],
-        'user': ['inventory_view']
+        'staff': ['inventory_view']
     }
 
     for user_data in users_data:
@@ -60,7 +59,8 @@ def seed_users():
     print(f"✓ Created {len(users_data)} sample users")
     print("  Login credentials:")
     for user_data in users_data:
-        print(f"    {user_data['username']} / {user_data['password']} ({user_data['role']})")
+        perms = default_permissions.get(user_data['role'], [])
+        print(f"    {user_data['username']} / {user_data['password']} ({user_data['role']}) → Permissions: {', '.join(perms)}")
 
 
 def seed_stores():

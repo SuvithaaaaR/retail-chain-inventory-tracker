@@ -30,6 +30,28 @@ def require_admin():
     return None
 
 
+def require_permission(permission):
+    """Check if user has specific permission or is admin"""
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+    
+    # Admin bypasses all permission checks
+    if session.get('role') == 'admin':
+        return None
+    
+    # Get user and check permissions
+    user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 401
+    
+    user_perms = user.get_permissions()
+    if permission not in user_perms:
+        return jsonify({'error': f'Permission denied. Required: {permission}'}), 403
+    
+    return None
+
+
 @api.route('/auth/login', methods=['POST'])
 def login():
     """Authenticate user and create session"""
@@ -155,6 +177,11 @@ def handle_products():
             return jsonify({'error': str(e)}), 500
     
     elif request.method == 'POST':
+        # Require 'products' permission to create
+        perm_error = require_permission('products')
+        if perm_error:
+            return perm_error
+        
         try:
             data = request.get_json()
             if not data:
@@ -192,6 +219,11 @@ def handle_product(product_id):
     service = InventoryService(user_id=session['user_id'])
     
     if request.method == 'PUT':
+        # Require 'products' permission to update
+        perm_error = require_permission('products')
+        if perm_error:
+            return perm_error
+        
         try:
             data = request.get_json()
             if not data:
@@ -206,6 +238,11 @@ def handle_product(product_id):
             return jsonify({'error': str(e)}), 500
     
     elif request.method == 'DELETE':
+        # Only admin can delete products
+        admin_error = require_admin()
+        if admin_error:
+            return admin_error
+        
         try:
             product = service.get_product_by_id(product_id)
             if not product:
@@ -249,6 +286,11 @@ def update_inventory():
     if auth_error:
         return auth_error
     
+    # Require 'inventory' permission to update stock
+    perm_error = require_permission('inventory')
+    if perm_error:
+        return perm_error
+    
     try:
         data = request.get_json()
         if not data:
@@ -281,6 +323,11 @@ def transfer_inventory():
     auth_error = require_auth()
     if auth_error:
         return auth_error
+    
+    # Require 'inventory' permission to transfer stock
+    perm_error = require_permission('inventory')
+    if perm_error:
+        return perm_error
     
     try:
         data = request.get_json()
@@ -316,6 +363,11 @@ def get_dashboard_kpis():
     if auth_error:
         return auth_error
     
+    # Require 'reports' permission to view dashboard
+    perm_error = require_permission('reports')
+    if perm_error:
+        return perm_error
+    
     try:
         service = InventoryService(user_id=session['user_id'])
         kpis = service.get_dashboard_kpis()
@@ -331,6 +383,11 @@ def get_low_stock():
     auth_error = require_auth()
     if auth_error:
         return auth_error
+    
+    # Require 'reports' permission to view low stock
+    perm_error = require_permission('reports')
+    if perm_error:
+        return perm_error
     
     try:
         store_id = request.args.get('store_id', type=int)
@@ -348,6 +405,11 @@ def get_stock_report():
     auth_error = require_auth()
     if auth_error:
         return auth_error
+    
+    # Require 'reports' permission to generate stock report
+    perm_error = require_permission('reports')
+    if perm_error:
+        return perm_error
     
     try:
         # Parse date parameters
@@ -382,6 +444,11 @@ def get_transactions():
     auth_error = require_auth()
     if auth_error:
         return auth_error
+    
+    # Require 'transactions' permission to view transaction history
+    perm_error = require_permission('transactions')
+    if perm_error:
+        return perm_error
     
     try:
         limit = request.args.get('limit', 50, type=int)

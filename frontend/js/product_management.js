@@ -107,18 +107,20 @@ class ProductManagement {
             <td>${Utils.formatDate(product.created_at)}</td>
             <td class="actions-cell">
                 ${(() => {
-                  // Show action buttons only if user has product management permission
+                  // Check permissions for product management
                   try {
                     const perms =
                       (currentUser && currentUser.permissions) || [];
-                    const canManage =
-                      (currentUser && currentUser.role === "admin") ||
-                      perms.includes("products");
+                    const isAdmin = currentUser && currentUser.role === "admin";
+                    const canManage = isAdmin || perms.includes("products");
+                    
                     if (canManage) {
-                      return `
-                        <button class="action-btn action-btn-edit" onclick="showEditProductModal(${product.id})">Edit</button>
-                        <button class="action-btn action-btn-delete" onclick="showDeleteProductModal(${product.id})">Delete</button>
-                      `;
+                      // Managers can edit, only admins can delete
+                      let buttons = `<button class="action-btn action-btn-edit" onclick="showEditProductModal(${product.id})">Edit</button>`;
+                      if (isAdmin) {
+                        buttons += `<button class="action-btn action-btn-delete" onclick="showDeleteProductModal(${product.id})">Delete</button>`;
+                      }
+                      return buttons;
                     }
                   } catch (e) {
                     // fallback: show nothing
