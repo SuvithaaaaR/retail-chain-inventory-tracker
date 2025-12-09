@@ -106,16 +106,22 @@ class ProductManagement {
             <td>${Utils.formatCurrency(product.selling_price)}</td>
             <td>${Utils.formatDate(product.created_at)}</td>
             <td class="actions-cell">
-                <button class="action-btn action-btn-edit" onclick="showEditProductModal(${
-                  product.id
-                })">
-                    Edit
-                </button>
-                <button class="action-btn action-btn-delete" onclick="showDeleteProductModal(${
-                  product.id
-                })">
-                    Delete
-                </button>
+                ${(() => {
+                  // Show action buttons only if user has product management permission
+                  try {
+                    const perms = (currentUser && currentUser.permissions) || [];
+                    const canManage = (currentUser && currentUser.role === 'admin') || perms.includes('products');
+                    if (canManage) {
+                      return `
+                        <button class="action-btn action-btn-edit" onclick="showEditProductModal(${product.id})">Edit</button>
+                        <button class="action-btn action-btn-delete" onclick="showDeleteProductModal(${product.id})">Delete</button>
+                      `;
+                    }
+                  } catch (e) {
+                    // fallback: show nothing
+                  }
+                  return '';
+                })()}
             </td>
         `;
 

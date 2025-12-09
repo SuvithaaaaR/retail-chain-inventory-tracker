@@ -38,12 +38,22 @@ def seed_users():
         {'username': 'user2', 'password': 'user123', 'role': 'user'},
     ]
     
+    # Define default permission sets per role
+    default_permissions = {
+        'admin': ['products', 'inventory', 'reports', 'transactions', 'manage_users'],
+        'manager': ['products', 'inventory', 'reports', 'transactions'],
+        'user': ['inventory_view']
+    }
+
     for user_data in users_data:
         user = User(
             username=user_data['username'],
             role=user_data['role']
         )
         user.set_password(user_data['password'])
+        # assign default permissions based on role
+        perms = default_permissions.get(user_data['role'], [])
+        user.set_permissions(perms)
         db.session.add(user)
     
     db.session.commit()

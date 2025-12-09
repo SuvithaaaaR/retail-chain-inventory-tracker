@@ -20,6 +20,8 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')  # user, admin, manager
+    # Comma-separated permissions string. Example: 'products,inventory,reports'
+    permissions = db.Column(db.Text, nullable=False, default='')
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     def set_password(self, password):
@@ -29,6 +31,23 @@ class User(db.Model):
     def check_password(self, password):
         """Check if provided password matches the hash"""
         return check_password_hash(self.password_hash, password)
+
+    def set_permissions(self, perms):
+        """Set permissions from iterable (list/tuple). Stores as comma-separated string."""
+        if perms is None:
+            self.permissions = ''
+        elif isinstance(perms, (list, tuple)):
+            # normalize to lowercase strings without spaces
+            self.permissions = ','.join([str(p).strip().lower() for p in perms])
+        else:
+            # accept already-serialized string
+            self.permissions = str(perms)
+
+    def get_permissions(self):
+        """Return permissions as a list of strings."""
+        if not self.permissions:
+            return []
+        return [p for p in [s.strip() for s in self.permissions.split(',')] if p]
     
     def to_dict(self):
         """Convert model to dictionary for JSON serialization"""
@@ -36,7 +55,8 @@ class User(db.Model):
             'id': self.id,
             'username': self.username,
             'role': self.role,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'permissions': self.get_permissions()
         }
 
 

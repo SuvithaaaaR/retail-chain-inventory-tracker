@@ -20,6 +20,16 @@ def require_auth():
     return None
 
 
+def require_admin():
+    """Require the current session user to be an admin"""
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+    if session.get('role') != 'admin':
+        return jsonify({'error': 'Admin privileges required'}), 403
+    return None
+
+
 @api.route('/auth/login', methods=['POST'])
 def login():
     """Authenticate user and create session"""
@@ -55,12 +65,18 @@ def logout():
 def auth_status():
     """Get current authentication status"""
     if 'user_id' in session:
-        return jsonify({
-            'authenticated': True,
-            'user_id': session['user_id'],
-            'username': session['username'],
-            'role': session['role']
-        })
+        try:
+            user = User.query.get(session['user_id'])
+            return jsonify({
+                'authenticated': True,
+                'user': user.to_dict() if user else {
+                    'user_id': session['user_id'],
+                    'username': session.get('username'),
+                    'role': session.get('role')
+                }
+            })
+        except Exception:
+            return jsonify({'authenticated': True, 'user_id': session['user_id']})
     else:
         return jsonify({'authenticated': False})
 
@@ -77,6 +93,48 @@ def get_stores():
         stores = service.get_stores()
         return jsonify([store.to_dict() for store in stores])
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/users', methods=['GET'])
+def list_users():
+    """List all users (admin only)"""
+    admin_error = require_admin()
+    if admin_error:
+        return admin_error
+
+    try:
+        users = User.query.all()
+        return jsonify([u.to_dict() for u in users])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/users/<int:user_id>/permissions', methods=['PUT'])
+def update_user_permissions(user_id):
+    """Update a user's permissions (admin only)
+
+    Request JSON: { 'permissions': ['products','inventory'] }
+    """
+    admin_error = require_admin()
+    if admin_error:
+        return admin_error
+
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json()
+        if not data or 'permissions' not in data:
+            return jsonify({'error': 'permissions field required'}), 400
+
+        perms = data.get('permissions')
+        user.set_permissions(perms)
+        db.session.commit()
+        return jsonify(user.to_dict())
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
