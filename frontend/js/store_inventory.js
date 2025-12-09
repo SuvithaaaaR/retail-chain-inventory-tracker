@@ -190,13 +190,14 @@ class StoreInventory {
 
     // Check permissions - only show action buttons if user has 'inventory' permission
     const currentUser = Auth.currentUser;
-    const hasInventoryPermission = currentUser && (
-      currentUser.role === 'admin' || 
-      (currentUser.permissions && currentUser.permissions.includes('inventory'))
-    );
+    const hasInventoryPermission =
+      currentUser &&
+      (currentUser.role === "admin" ||
+        (currentUser.permissions &&
+          currentUser.permissions.includes("inventory")));
 
     // Build actions HTML based on permissions
-    let actionsHTML = '';
+    let actionsHTML = "";
     if (hasInventoryPermission) {
       actionsHTML = `
         <button class="action-btn action-btn-update" onclick="showUpdateStockModal(${item.product_id}, ${item.store_id})">

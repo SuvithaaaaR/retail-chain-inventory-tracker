@@ -113,7 +113,7 @@ class ProductManagement {
                       (currentUser && currentUser.permissions) || [];
                     const isAdmin = currentUser && currentUser.role === "admin";
                     const canManage = isAdmin || perms.includes("products");
-                    
+
                     if (canManage) {
                       // Managers can edit, only admins can delete
                       let buttons = `<button class="action-btn action-btn-edit" onclick="showEditProductModal(${product.id})">Edit</button>`;
