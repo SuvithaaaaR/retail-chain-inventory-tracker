@@ -152,7 +152,7 @@ class Auth {
           id: user.id || data.user_id,
           username: user.username || data.username,
           role: user.role || data.role,
-          permissions: user.permissions || []
+          permissions: user.permissions || [],
         };
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
         this.updateUserDisplay();
@@ -202,26 +202,26 @@ class Auth {
 
   static applyPermissions() {
     // Find all elements that declare a permission requirement via data-permission
-    const elements = document.querySelectorAll('[data-permission]');
+    const elements = document.querySelectorAll("[data-permission]");
     if (!elements) return;
 
     const perms = (currentUser && currentUser.permissions) || [];
     elements.forEach((el) => {
-      const req = el.getAttribute('data-permission');
+      const req = el.getAttribute("data-permission");
       if (!req) return;
 
       // allow multiple permissions separated by comma; show if any match
-      const required = req.split(',').map(s => s.trim().toLowerCase());
-      const allowed = required.some(r => perms.includes(r) || r === 'all');
+      const required = req.split(",").map((s) => s.trim().toLowerCase());
+      const allowed = required.some((r) => perms.includes(r) || r === "all");
 
       // If user is admin role, show everything by default
-      if (currentUser && currentUser.role === 'admin') {
-        el.style.display = '';
+      if (currentUser && currentUser.role === "admin") {
+        el.style.display = "";
       } else if (allowed) {
-        el.style.display = '';
+        el.style.display = "";
       } else {
         // hide element if no permission
-        el.style.display = 'none';
+        el.style.display = "none";
       }
     });
   }

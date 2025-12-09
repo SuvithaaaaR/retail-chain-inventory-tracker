@@ -109,8 +109,11 @@ class ProductManagement {
                 ${(() => {
                   // Show action buttons only if user has product management permission
                   try {
-                    const perms = (currentUser && currentUser.permissions) || [];
-                    const canManage = (currentUser && currentUser.role === 'admin') || perms.includes('products');
+                    const perms =
+                      (currentUser && currentUser.permissions) || [];
+                    const canManage =
+                      (currentUser && currentUser.role === "admin") ||
+                      perms.includes("products");
                     if (canManage) {
                       return `
                         <button class="action-btn action-btn-edit" onclick="showEditProductModal(${product.id})">Edit</button>
@@ -120,7 +123,7 @@ class ProductManagement {
                   } catch (e) {
                     // fallback: show nothing
                   }
-                  return '';
+                  return "";
                 })()}
             </td>
         `;
