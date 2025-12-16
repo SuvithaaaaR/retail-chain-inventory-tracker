@@ -155,6 +155,8 @@ class Transaction(db.Model):
     note = db.Column(db.Text)
     related_store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))  # For transfers
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    previous_quantity = db.Column(db.Integer)  # Quantity before transaction
+    new_quantity = db.Column(db.Integer)  # Quantity after transaction
     
     # Relationship to related store for transfers
     related_store = db.relationship('Store', foreign_keys=[related_store_id])
@@ -172,6 +174,8 @@ class Transaction(db.Model):
             'note': self.note,
             'related_store_id': self.related_store_id,
             'user_id': self.user_id,
+            'previous_quantity': self.previous_quantity,
+            'new_quantity': self.new_quantity,
             'product_name': self.product.name if self.product else None,
             'product_sku': self.product.sku if self.product else None,
             'store_name': self.store.name if self.store else None,

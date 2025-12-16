@@ -188,6 +188,7 @@ class InventoryService:
                 raise ValueError(f"Insufficient stock. Current: {inventory_item.quantity}, Requested: {abs(delta)}")
             
             # Update quantity
+            previous_qty = inventory_item.quantity
             inventory_item.quantity = new_quantity
             inventory_item.last_updated = datetime.now(timezone.utc)
             
@@ -199,7 +200,9 @@ class InventoryService:
                 type=transaction_type,
                 quantity=abs(delta),
                 note=reason,
-                user_id=self.user_id
+                user_id=self.user_id,
+                previous_quantity=previous_qty,
+                new_quantity=new_quantity
             )
             
             db.session.add(transaction)
@@ -269,11 +272,15 @@ class InventoryService:
                 db.session.add(to_inventory)
             
             # Update quantities
+            from_previous_qty = from_inventory.quantity
             from_inventory.quantity -= quantity
             from_inventory.last_updated = datetime.now(timezone.utc)
+            from_new_qty = from_inventory.quantity
             
+            to_previous_qty = to_inventory.quantity
             to_inventory.quantity += quantity
             to_inventory.last_updated = datetime.now(timezone.utc)
+            to_new_qty = to_inventory.quantity
             
             # Create transaction records for both stores
             out_transaction = Transaction(
@@ -283,7 +290,9 @@ class InventoryService:
                 quantity=quantity,
                 note=f"Transfer OUT to {to_store.name}: {reason}",
                 related_store_id=to_store_id,
-                user_id=self.user_id
+                user_id=self.user_id,
+                previous_quantity=from_previous_qty,
+                new_quantity=from_new_qty
             )
             
             in_transaction = Transaction(
@@ -293,7 +302,9 @@ class InventoryService:
                 quantity=quantity,
                 note=f"Transfer IN from {from_store.name}: {reason}",
                 related_store_id=from_store_id,
-                user_id=self.user_id
+                user_id=self.user_id,
+                previous_quantity=to_previous_qty,
+                new_quantity=to_new_qty
             )
             
             db.session.add(out_transaction)

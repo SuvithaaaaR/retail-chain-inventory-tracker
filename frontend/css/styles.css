@@ -470,6 +470,21 @@ label {
   }
 }
 
+@keyframes highlight {
+  0% {
+    background-color: #fff3cd;
+    transform: scale(1);
+  }
+  50% {
+    background-color: #ffc107;
+    transform: scale(1.1);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
 .modal-header {
   padding: 20px 25px;
   border-bottom: 1px solid #eee;

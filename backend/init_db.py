@@ -229,7 +229,7 @@ def seed_inventory():
 
 
 def seed_transactions():
-    """Create sample transaction history"""
+    """Create sample transaction history with before/after quantities"""
     print("Creating sample transaction history...")
     
     admin_user = User.query.filter_by(username='admin').first()
@@ -242,7 +242,9 @@ def seed_transactions():
             'type': 'IN',
             'quantity': 10,
             'note': 'Initial stock',
-            'user_id': admin_user.id
+            'user_id': admin_user.id,
+            'previous_quantity': 8,
+            'new_quantity': 18
         },
         {
             'product_id': 2,
@@ -250,7 +252,9 @@ def seed_transactions():
             'type': 'OUT',
             'quantity': 5,
             'note': 'Sale to customer',
-            'user_id': admin_user.id
+            'user_id': admin_user.id,
+            'previous_quantity': 23,
+            'new_quantity': 18
         },
         {
             'product_id': 4,
@@ -259,7 +263,9 @@ def seed_transactions():
             'quantity': 10,
             'note': 'Transfer to Mall Store',
             'related_store_id': 2,
-            'user_id': admin_user.id
+            'user_id': admin_user.id,
+            'previous_quantity': 13,
+            'new_quantity': 3
         },
         {
             'product_id': 7,
@@ -267,7 +273,9 @@ def seed_transactions():
             'type': 'IN',
             'quantity': 50,
             'note': 'Restocking from supplier',
-            'user_id': admin_user.id
+            'user_id': admin_user.id,
+            'previous_quantity': 35,
+            'new_quantity': 85
         },
         {
             'product_id': 8,
@@ -275,7 +283,9 @@ def seed_transactions():
             'type': 'OUT',
             'quantity': 15,
             'note': 'Online order fulfillment',
-            'user_id': admin_user.id
+            'user_id': admin_user.id,
+            'previous_quantity': 55,
+            'new_quantity': 40
         },
     ]
     
